@@ -1,0 +1,49 @@
+<!--
+  login.html — Página de acceso (ruta GET /login).
+  Autocontenida: su propio HTML y su propio login.js, sin depender del resto
+  de la app. El servidor redirige aquí (pageGuest/pageAuth en server.js)
+  según haya o no sesión activa.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión — Control de Equipos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232563eb%22/><text x=%2250%22 y=%2266%22 font-size=%2248%22 font-family=%22Arial,sans-serif%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>CE</text></svg>">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div id="login-overlay" class="login-overlay">
+  <img src="/logo.png" class="login-overlay-logo" alt="Megas">
+  <div class="login-box">
+    <h2 style="margin-bottom:2px;font-size:1.4rem">Bienvenido/a</h2>
+    <p style="text-align:center;margin:0 0 24px;color:var(--muted);font-size:0.88rem">Control de Equipos</p>
+    <form id="form-login">
+      <label>Usuario<input id="login-username" type="text" autocomplete="username" placeholder="usuario"></label>
+      <label>Contraseña<input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+      <p id="login-error" class="login-error hidden"></p>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px">Entrar</button>
+      <button type="button" id="btn-olvide-pass" style="margin-top:10px;background:none;border:none;color:var(--primary);font-size:0.82rem;cursor:pointer;text-decoration:underline;padding:0">¿Olvidaste tu contraseña?</button>
+    </form>
+  </div>
+  <footer class="app-footer login-footer">Copyright © 2026 — Hecho por Alejandro Pacheco</footer>
+</div>
+
+<dialog id="modal-recuperar-pass">
+  <form id="form-recuperar-pass" style="padding:24px 28px;gap:14px;min-width:320px;max-width:400px">
+    <h3 style="margin:0 0 4px">Recuperar contraseña</h3>
+    <p style="margin:0 0 8px;font-size:0.84rem;color:var(--muted)">Se enviará un enlace al correo de recuperación configurado.</p>
+    <label>Usuario<input id="recuperar-username" type="text" placeholder="Tu nombre de usuario" autocomplete="username" required></label>
+    <p id="recuperar-status" class="hidden" style="margin:0;font-size:0.84rem"></p>
+    <div class="modal-actions">
+      <button type="button" id="btn-recuperar-cancelar" class="btn">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Enviar enlace</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/pages/login/login.js"></script>
+</body>
+</html>

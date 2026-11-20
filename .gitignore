@@ -1,0 +1,19 @@
+# Dependencias (se regeneran con `npm install`)
+node_modules/
+
+# Datos reales de la app — nunca deben subirse a un repositorio
+data.sqlite
+data.sqlite-shm
+data.sqlite-wal
+uploads/
+archivos/
+
+# Build
+dist/
+
+# Backups locales
+backups/
+backups_merge/
+
+# Logs
+*.log

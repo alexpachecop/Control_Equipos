@@ -1,0 +1,426 @@
+<!--
+  configuracion.html — Panel de Configuración (ruta GET /configuracion).
+  Página protegida (pageAuth en server.js); las pestañas marcadas
+  admin-only se ocultan en configuracion.js si el usuario no es admin.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración — Control de Equipos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232563eb%22/><text x=%2250%22 y=%2266%22 font-size=%2248%22 font-family=%22Arial,sans-serif%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>CE</text></svg>">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="brand" title="Ir a inicio">
+    <img src="/logo.png" style="height:28px;width:auto;max-width:120px;object-fit:contain;filter:brightness(0)invert(1)" alt="Logo">
+    <div class="brand-text">
+      <h1>Gestión Megas</h1>
+      <p>Clientes, equipos y garantías</p>
+    </div>
+  </a>
+  <div class="global-search">
+    <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <input id="global-search-input" type="text" placeholder="Buscar cliente, equipo, N/S, historial…" autocomplete="off">
+    <button id="global-search-btn" class="btn btn-primary">Buscar</button>
+    <div id="global-search-results" class="global-results hidden"></div>
+  </div>
+  <a href="/tickets" id="btn-tickets-view" class="btn-tickets-topbar" title="Ver todos los tickets">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2m0 10v2M13 11v2"/></g></svg>
+    <span class="tk-label">Tickets</span>
+    <span id="tickets-badge" class="tickets-badge hidden">0</span>
+  </a>
+  <a href="/inventario" id="btn-inventario-view" class="btn-inventario-topbar" title="Abrir inventario">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9m6 0v12"/></svg>
+    <span>Inventario</span>
+  </a>
+  <a href="/envios" id="btn-envios-view" class="btn-envios-topbar" title="Abrir envíos">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+    <span>Envíos</span>
+  </a>
+  <a href="/licencias" id="btn-licencias-view" class="btn-licencias-topbar" title="Abrir licencias">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+    <span>Licencias</span>
+  </a>
+  <div id="user-badge" class="user-badge">
+    <span id="user-badge-nombre"></span>
+    <button id="btn-mi-pass" style="background:none;border:none;color:inherit;cursor:pointer;padding:2px 4px;opacity:0.7;line-height:1" title="Cambiar mi contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+    <button id="btn-logout" title="Cerrar sesión"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></g></svg></button>
+  </div>
+  <a href="/configuracion" id="btn-config" class="btn-config-topbar nav-active" title="Configuración"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></g></svg></a>
+</header>
+
+<section id="settings-panel" class="settings-panel">
+  <div class="settings-panel-header">
+    <a href="/" class="sp-back-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7-7-7 7 7 7"/></svg> Volver</a>
+    <h2>Configuración</h2>
+  </div>
+  <div class="settings-body">
+    <nav class="settings-sidebar">
+      <div class="settings-nav-group admin-only">Taller</div>
+      <button class="settings-tab admin-only active" data-pane="general">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>General
+      </button>
+      <button class="settings-tab admin-only" data-pane="impresoras">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Impresoras
+      </button>
+      <button class="settings-tab admin-only" data-pane="correo">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Correo SMTP
+      </button>
+
+      <div class="settings-nav-group">Listas</div>
+      <button class="settings-tab" data-pane="tecnicos">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Técnicos
+      </button>
+      <button class="settings-tab" data-pane="tipos-intervencion">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Tipos intervención
+      </button>
+      <button class="settings-tab" data-pane="tipos-equipo">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Tipos equipo
+      </button>
+      <button class="settings-tab" data-pane="categorias-archivo">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Categorías archivo
+      </button>
+      <button class="settings-tab" data-pane="categorias-inventario">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Categorías inventario
+      </button>
+      <button class="settings-tab" data-pane="software">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Software
+      </button>
+      <button class="settings-tab" data-pane="tipos-credencial">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Tipos credencial
+      </button>
+      <button class="settings-tab" data-pane="transportistas">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>Transportistas
+      </button>
+      <button class="settings-tab" data-pane="programas-licencia">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>Programas de licencia
+      </button>
+
+      <div class="settings-nav-group admin-only">Tickets</div>
+      <button class="settings-tab admin-only" data-pane="estados-ticket">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Estados de ticket
+      </button>
+      <button class="settings-tab" data-pane="plantillas">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Plantillas
+      </button>
+
+      <div class="settings-nav-group">Sistema</div>
+      <button class="settings-tab admin-only" data-pane="usuarios" id="tab-usuarios" style="display:none">
+        <svg class="st-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Usuarios
+      </button>
+    </nav>
+
+    <div class="settings-content">
+
+      <div id="settings-pane-general" class="settings-pane">
+        <div class="sp-pane-title">General</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Etiquetas de envío</div>
+          <p class="settings-pane-desc">Códigos de franquicia para la generación de etiquetas logísticas.</p>
+          <div class="sp-grid-2">
+            <label>Fra. Origen<input id="input-config-fra-orig" placeholder="Ej: 00000"></label>
+            <label>Nº cliente mensajería<input id="input-config-cli" placeholder="Ej: 00000"></label>
+          </div>
+          <div class="sp-actions">
+            <button type="button" id="btn-guardar-config-general" class="btn btn-primary">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-tecnicos" class="settings-pane hidden">
+        <div class="sp-pane-title">Técnicos</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Técnicos disponibles</div>
+          <p class="settings-pane-desc">Aparecen en el desplegable al registrar intervenciones y tickets.</p>
+          <div id="config-lista-tecnicos" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-tecnico" placeholder="Nombre del técnico…">
+            <button type="button" class="btn btn-small" data-add-lista="tecnicos" data-input="input-new-tecnico">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-tipos-intervencion" class="settings-pane hidden">
+        <div class="sp-pane-title">Tipos de intervención</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Tipos disponibles</div>
+          <p class="settings-pane-desc">Aparecen al registrar una nueva intervención en el historial del equipo.</p>
+          <div id="config-lista-intervencion" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-tipo-intervencion" placeholder="Nuevo tipo…">
+            <button type="button" class="btn btn-small" data-add-lista="tipos_intervencion" data-input="input-new-tipo-intervencion">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-categorias-archivo" class="settings-pane hidden">
+        <div class="sp-pane-title">Categorías de archivo</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Categorías disponibles</div>
+          <p class="settings-pane-desc">Para clasificar archivos adjuntos en cada equipo.</p>
+          <div id="config-lista-archivo" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-cat-archivo" placeholder="Nueva categoría…">
+            <button type="button" class="btn btn-small" data-add-lista="categorias_archivo" data-input="input-new-cat-archivo">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-categorias-inventario" class="settings-pane hidden">
+        <div class="sp-pane-title">Categorías de inventario</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Categorías disponibles</div>
+          <p class="settings-pane-desc">Para clasificar los artículos del almacén.</p>
+          <div id="config-lista-inventario" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-cat-inventario" placeholder="Nueva categoría…">
+            <button type="button" class="btn btn-small" data-add-lista="categorias_inventario" data-input="input-new-cat-inventario">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-tipos-equipo" class="settings-pane hidden">
+        <div class="sp-pane-title">Tipos de equipo</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Tipos disponibles</div>
+          <p class="settings-pane-desc">Aparecen al crear o editar un equipo.</p>
+          <div id="config-lista-equipo" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-tipo-equipo" placeholder="Nuevo tipo…">
+            <button type="button" class="btn btn-small" data-add-lista="tipos_equipo" data-input="input-new-tipo-equipo">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-software" class="settings-pane hidden">
+        <div class="sp-pane-title">Software</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Lista de software</div>
+          <p class="settings-pane-desc">Software que puede marcarse como instalado en un equipo.</p>
+          <div id="config-lista-software" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-software" placeholder="Ej: Office 365, Chrome, Antivirus…">
+            <button type="button" class="btn btn-small" data-add-lista="lista_software" data-input="input-new-software">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-tipos-credencial" class="settings-pane hidden">
+        <div class="sp-pane-title">Tipos de credencial</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Tipos disponibles</div>
+          <p class="settings-pane-desc">Aparecen al añadir usuario/contraseña a un equipo.</p>
+          <div id="config-lista-credencial" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-tipo-credencial" placeholder="Ej: Windows, BIOS, SAP, VPN…">
+            <button type="button" class="btn btn-small" data-add-lista="tipos_credencial" data-input="input-new-tipo-credencial">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-transportistas" class="settings-pane hidden">
+        <div class="sp-pane-title">Transportistas</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Transportistas disponibles</div>
+          <p class="settings-pane-desc">Aparecen al registrar un envío o devolución.</p>
+          <div id="config-lista-transportistas" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-transportista" placeholder="Ej: MRW, SEUR, Celeritas…">
+            <button type="button" class="btn btn-small" data-add-lista="transportistas" data-input="input-new-transportista">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-programas-licencia" class="settings-pane hidden">
+        <div class="sp-pane-title">Programas de licencia</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Programas disponibles</div>
+          <p class="settings-pane-desc">Aparecen al registrar la licencia de un cliente.</p>
+          <div id="config-lista-programas-licencia" class="config-lista-items"></div>
+          <div class="config-lista-add">
+            <input id="input-new-programa-licencia" placeholder="Ej: Microsoft Office, Kaspersky…">
+            <button type="button" class="btn btn-small" data-add-lista="programas_licencia" data-input="input-new-programa-licencia">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-impresoras" class="settings-pane hidden">
+        <div class="sp-pane-title">Impresoras</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Impresoras predeterminadas</div>
+          <p class="settings-pane-desc">Se usan para imprimir directamente sin diálogo del sistema. El nombre debe coincidir exactamente con el nombre de la impresora en Windows.</p>
+          <label>Etiquetas de envío
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="input-imp-envio" placeholder="Nombre exacto de la impresora">
+              <button type="button" id="btn-listar-imp" class="btn btn-small">Detectar</button>
+            </div>
+          </label>
+          <label>Etiquetas de equipo<input id="input-imp-etiqueta" placeholder="Nombre exacto de la impresora"></label>
+          <label>Informes / Excel<input id="input-imp-informe" placeholder="Nombre exacto de la impresora"></label>
+          <div id="imp-lista-disponibles" class="imp-lista hidden"></div>
+          <div class="sp-actions">
+            <button type="button" id="btn-guardar-impresoras" class="btn btn-primary">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-correo" class="settings-pane hidden">
+        <div class="sp-pane-title">Correo SMTP</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Identidad del taller</div>
+          <label>Nombre del taller<input id="input-smtp-nombre-taller" placeholder="Ej: Servicio Técnico XYZ"></label>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">Servidor de correo saliente</div>
+          <p class="settings-pane-desc">Se recomienda un correo con dominio propio. El campo "De" es la dirección que verá el destinatario.</p>
+          <div class="sp-grid-2">
+            <label>Servidor SMTP (host)<input id="input-smtp-host" placeholder="mail.tudominio.com"></label>
+            <label>Puerto<input id="input-smtp-port" type="number" placeholder="587"></label>
+          </div>
+          <label>Usuario (autenticación SMTP)<input id="input-smtp-user" type="email" placeholder="noreply@tudominio.com"></label>
+          <label>Contraseña<input id="input-smtp-pass" type="password" autocomplete="new-password"></label>
+          <label>De (email remitente visible)<input id="input-smtp-from" type="email" placeholder="noreply@tudominio.com"></label>
+          <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+            <input id="input-smtp-secure" type="checkbox" style="width:auto;margin:0;cursor:pointer"> Usar SSL/TLS (puerto 465)
+          </label>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">Recuperación de contraseña</div>
+          <p class="settings-pane-desc">Correo al que se envía el enlace de restablecimiento cuando un usuario solicita recuperar su contraseña.</p>
+          <label>Correo de recuperación<input id="input-correo-recuperacion" type="email" placeholder="admin@tudominio.com"></label>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">Prueba de envío</div>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            <label style="flex:1">Destinatario de prueba<input id="input-smtp-test-to" type="email" placeholder="tuCorreo@ejemplo.com"></label>
+            <button type="button" id="btn-smtp-test" class="btn">Enviar prueba</button>
+          </div>
+          <p id="smtp-status" class="hidden" style="font-size:0.85rem;margin:0"></p>
+        </div>
+        <div class="sp-actions">
+          <button type="button" id="btn-guardar-smtp" class="btn btn-primary">Guardar configuración</button>
+        </div>
+      </div>
+
+      <div id="settings-pane-estados-ticket" class="settings-pane hidden">
+        <div class="sp-pane-title">Estados de ticket</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Flujo de estados</div>
+          <p class="settings-pane-desc">Los estados aparecen como pasos en el stepper del ticket. Asigna un color para identificarlos visualmente en las listas y pills.</p>
+          <div id="estados-ticket-lista" class="estados-ticket-lista"></div>
+          <div class="config-lista-add" style="align-items:center;gap:10px">
+            <input id="input-new-estado-nombre" placeholder="Nombre del nuevo estado…">
+            <label style="flex-direction:row;align-items:center;gap:6px;font-size:0.82rem;font-weight:600;white-space:nowrap;margin:0">Color<input id="input-new-estado-color" type="color" value="#3b82f6" class="color-picker-inline"></label>
+            <button type="button" id="btn-add-estado-ticket" class="btn btn-small">Añadir</button>
+          </div>
+          <div class="sp-actions">
+            <button type="button" id="btn-guardar-estados-ticket" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-plantillas" class="settings-pane hidden">
+        <div class="sp-pane-title">Plantillas de intervención</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Plantillas rápidas</div>
+          <p class="settings-pane-desc">Textos predefinidos para rellenar rápidamente el campo "Trabajo realizado" al crear una intervención.</p>
+          <div id="plantillas-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border-radius:8px">
+            <label style="font-size:0.82rem;font-weight:600">Nombre<input id="input-plantilla-nombre" placeholder="Ej: Limpieza general" style="margin-top:4px"></label>
+            <label style="font-size:0.82rem;font-weight:600">Tipo (opcional)<input id="input-plantilla-tipo" placeholder="Ej: Mantenimiento preventivo" style="margin-top:4px"></label>
+            <label style="font-size:0.82rem;font-weight:600">Contenido<textarea id="input-plantilla-contenido" rows="3" placeholder="Texto de la intervención…" style="margin-top:4px;resize:vertical"></textarea></label>
+            <div><button type="button" id="btn-guardar-plantilla" class="btn btn-primary btn-small">Guardar plantilla</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-pane-usuarios" class="settings-pane hidden">
+        <div class="sp-pane-title">Usuarios</div>
+        <div class="settings-card">
+          <div class="settings-card-title">Gestión de accesos</div>
+          <p class="settings-pane-desc">Solo los administradores pueden ver y gestionar esta sección.</p>
+          <div id="usuarios-lista"></div>
+          <div class="sp-actions">
+            <button type="button" id="btn-nuevo-usuario" class="btn btn-primary">+ Nuevo usuario</button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">Cambiar mi contraseña</div>
+          <label>Nueva contraseña<input id="input-mi-password" type="password" placeholder="Mínimo 4 caracteres"></label>
+          <div class="sp-actions">
+            <button type="button" id="btn-cambiar-mi-password" class="btn btn-primary">Cambiar contraseña</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <footer class="app-footer">Copyright © 2026 — Hecho por Alejandro Pacheco</footer>
+</section>
+
+<!-- Modal nuevo usuario -->
+<dialog id="modal-nuevo-usuario">
+  <form id="form-nuevo-usuario" method="dialog" style="padding:22px 26px;gap:14px;min-width:320px">
+    <h3>Nuevo usuario</h3>
+    <label>Nombre completo<input id="input-usr-nombre" type="text" placeholder="Ej: Nombre Apellido"></label>
+    <label>Usuario<input id="input-usr-username" type="text" placeholder="Ej: usuario" autocomplete="off"></label>
+    <label>Contraseña<input id="input-usr-password" type="password" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></label>
+    <label>Rol<select id="input-usr-rol"><option value="tecnico">Técnico</option><option value="admin">Administrador</option></select></label>
+    <div class="modal-actions" style="margin-top:8px">
+      <button type="button" id="btn-usr-cancelar" class="btn">Cancelar</button>
+      <button type="button" id="btn-usr-guardar" class="btn btn-primary">Crear</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal mi perfil / cambiar contraseña -->
+<dialog id="modal-cambiar-pass">
+  <form id="form-cambiar-pass" style="padding:22px 26px;gap:14px;min-width:340px">
+    <h3 id="cambiar-pass-titulo" style="margin:0 0 2px">Mi perfil</h3>
+    <p id="cambiar-pass-usuario" style="margin:0 0 4px;font-size:0.85rem;color:var(--muted)"></p>
+    <input type="hidden" id="cambiar-pass-uid">
+    <label>Correo electrónico<input id="input-perfil-email" type="email" placeholder="tu@correo.com" autocomplete="email"></label>
+    <hr style="border:none;border-top:1px solid var(--border);margin:2px 0">
+    <p style="margin:0;font-size:0.8rem;color:var(--muted)">Nueva contraseña (dejar vacío para no cambiarla)</p>
+    <label>Nueva contraseña<input id="input-cambiar-pass" type="password" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></label>
+    <div class="modal-actions">
+      <button type="button" id="btn-cambiar-pass-cancelar" class="btn">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal confirmación genérica -->
+<dialog id="modal-confirm" class="modal-aviso">
+  <form method="dialog" style="padding:22px 26px;gap:14px;max-width:380px">
+    <h3 id="confirm-titulo">Confirmar</h3>
+    <p id="confirm-mensaje" style="color:var(--muted);font-size:0.9rem;margin:0;white-space:pre-line"></p>
+    <div class="modal-actions" style="margin-top:4px">
+      <button type="submit" value="cancel" id="confirm-btn-cancel" class="btn">Cancelar</button>
+      <button type="submit" value="ok" id="confirm-btn-ok" class="btn btn-primary">Aceptar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal aviso genérico -->
+<dialog id="modal-alert" class="modal-aviso">
+  <form method="dialog" style="padding:22px 26px;gap:14px;max-width:380px">
+    <h3 id="alert-titulo">Aviso</h3>
+    <p id="alert-mensaje" style="color:var(--muted);font-size:0.9rem;margin:0;white-space:pre-line"></p>
+    <div class="modal-actions" style="margin-top:4px">
+      <button type="submit" value="ok" class="btn btn-primary">Aceptar</button>
+    </div>
+  </form>
+</dialog>
+
+
+<script src="/pages/configuracion/configuracion.js"></script>
+</body>
+</html>

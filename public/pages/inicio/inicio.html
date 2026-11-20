@@ -1,0 +1,226 @@
+<!--
+  inicio.html — Página de Inicio (ruta GET /). Panel de clientes (maestro) +
+  dashboard (detalle). Página protegida: server.js exige sesión (pageAuth)
+  antes de servirla.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Equipos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%232563eb%22/><text x=%2250%22 y=%2266%22 font-size=%2248%22 font-family=%22Arial,sans-serif%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>CE</text></svg>">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="brand nav-active" title="Ir a inicio">
+    <img src="/logo.png" style="height:28px;width:auto;max-width:120px;object-fit:contain;filter:brightness(0)invert(1)" alt="Logo">
+    <div class="brand-text">
+      <h1>Gestión Megas</h1>
+      <p>Clientes, equipos y garantías</p>
+    </div>
+  </a>
+  <div class="global-search">
+    <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M14 14L18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <input id="global-search-input" type="text" placeholder="Buscar cliente, equipo, N/S, historial…" autocomplete="off">
+    <button id="global-search-btn" class="btn btn-primary">Buscar</button>
+    <div id="global-search-results" class="global-results hidden"></div>
+  </div>
+  <a href="/tickets" id="btn-tickets-view" class="btn-tickets-topbar" title="Ver todos los tickets">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2m0 10v2M13 11v2"/></g></svg>
+    <span class="tk-label">Tickets</span>
+    <span id="tickets-badge" class="tickets-badge hidden">0</span>
+  </a>
+  <a href="/inventario" id="btn-inventario-view" class="btn-inventario-topbar" title="Abrir inventario">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9m6 0v12"/></svg>
+    <span>Inventario</span>
+  </a>
+  <a href="/envios" id="btn-envios-view" class="btn-envios-topbar" title="Abrir envíos">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+    <span>Envíos</span>
+  </a>
+  <a href="/licencias" id="btn-licencias-view" class="btn-licencias-topbar" title="Abrir licencias">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+    <span>Licencias</span>
+  </a>
+  <div id="user-badge" class="user-badge">
+    <span id="user-badge-nombre"></span>
+    <button id="btn-mi-pass" style="background:none;border:none;color:inherit;cursor:pointer;padding:2px 4px;opacity:0.7;line-height:1" title="Cambiar mi contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+    <button id="btn-logout" title="Cerrar sesión"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></g></svg></button>
+  </div>
+  <a href="/configuracion" id="btn-config" class="btn-config-topbar" title="Configuración"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></g></svg></a>
+</header>
+
+<main class="layout" id="main-layout">
+  <section class="panel clientes-panel">
+    <a href="/oficina" id="btn-oficina-view" class="oficina-sidebar-btn">
+      <div class="cliente-avatar sin-av"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></g></svg></div>
+      <div class="cliente-row-main">
+        <div class="cliente-nombre">Oficina Megas</div>
+        <div class="cliente-meta">Equipos y material de oficina</div>
+      </div>
+      <span id="oficina-badge" class="tickets-badge hidden">0</span>
+      <span class="cliente-row-arrow" aria-hidden="true">›</span>
+    </a>
+    <div class="panel-header">
+      <div class="panel-title-group">
+        <span class="section-kicker">Gestión diaria</span>
+        <h2>Clientes</h2>
+      </div>
+      <button id="btn-nuevo-cliente" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></g></svg> Cliente</button>
+    </div>
+    <div class="clientes-summary">
+      <strong id="clientes-total">0 clientes</strong>
+      <span>Selecciona uno para ver sus equipos</span>
+    </div>
+    <label class="search-box-wrap">
+      <svg class="search-box-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"/></svg>
+      <input id="cliente-search" type="text" placeholder="Buscar cliente…" autocomplete="off">
+    </label>
+    <ul id="clientes-list" class="clientes-list"></ul>
+  </section>
+
+  <section class="panel detalle-panel modo-inicio" id="detalle-panel">
+    <div id="panel-inicio">
+      <div class="inicio-top">
+        <div>
+          <h2 id="inicio-saludo">Hola</h2>
+          <p id="inicio-fecha" class="muted"></p>
+        </div>
+      </div>
+
+      <div class="inicio-kpis">
+        <div class="inicio-kpi">
+          <div class="inicio-kpi-top">
+            <span class="inicio-kpi-icon inicio-kpi-icon--blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span id="inicio-kpi-clientes-badge" class="inicio-kpi-badge inicio-kpi-badge--verde hidden"></span>
+          </div>
+          <div id="inicio-kpi-clientes" class="inicio-kpi-valor">0</div>
+          <div class="inicio-kpi-label">Clientes activos</div>
+        </div>
+        <div class="inicio-kpi">
+          <div class="inicio-kpi-top">
+            <span class="inicio-kpi-icon inicio-kpi-icon--purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg></span>
+          </div>
+          <div id="inicio-kpi-oficina" class="inicio-kpi-valor">0</div>
+          <div class="inicio-kpi-label">Equipos en Oficina Megas</div>
+        </div>
+        <div class="inicio-kpi">
+          <div class="inicio-kpi-top">
+            <span class="inicio-kpi-icon inicio-kpi-icon--red"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M13 5v2m0 10v2M13 11v2"/></svg></span>
+            <span id="inicio-kpi-tickets-badge" class="inicio-kpi-badge inicio-kpi-badge--verde hidden"></span>
+          </div>
+          <div id="inicio-kpi-tickets" class="inicio-kpi-valor">0</div>
+          <div class="inicio-kpi-label">Tickets abiertos</div>
+        </div>
+        <div class="inicio-kpi">
+          <div class="inicio-kpi-top">
+            <span class="inicio-kpi-icon inicio-kpi-icon--amber"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+            <span id="inicio-kpi-minimo-badge" class="inicio-kpi-badge hidden"></span>
+          </div>
+          <div id="inicio-kpi-minimo" class="inicio-kpi-valor">0</div>
+          <div class="inicio-kpi-label">Artículos bajo mínimo</div>
+        </div>
+      </div>
+
+      <div class="inicio-bottom">
+        <div class="inicio-card inicio-chart">
+          <div class="inicio-card-head">
+            <div>
+              <h3>Movimientos de inventario</h3>
+              <p class="muted">Últimos 7 días</p>
+            </div>
+            <div class="inicio-chart-legend">
+              <span><span class="inicio-dot inicio-dot--entrada"></span>Entradas</span>
+              <span><span class="inicio-dot inicio-dot--salida"></span>Salidas</span>
+            </div>
+          </div>
+          <svg id="inicio-chart-svg" viewBox="0 0 520 220" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="inicio-side-cards">
+          <div class="inicio-card">
+            <h3>Actividad reciente</h3>
+            <div id="inicio-actividad" class="inicio-actividad"></div>
+          </div>
+          <div class="inicio-card">
+            <h3>Garantías por vencer</h3>
+            <div id="inicio-garantias" class="inicio-garantias"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal Cliente -->
+<dialog id="modal-cliente">
+  <form id="form-cliente" method="dialog">
+    <h3 id="modal-cliente-titulo">Nuevo cliente</h3>
+    <input type="hidden" id="cliente-id">
+    <label>Nombre *<input id="input-cliente-nombre" required></label>
+    <label>Teléfono<input id="input-cliente-telefono"></label>
+    <label>Email<input id="input-cliente-email" type="email"></label>
+    <label>Dirección<input id="input-cliente-direccion"></label>
+    <div class="cp-ciudad-row">
+      <label>CP<input id="input-cliente-cp" placeholder="02001"></label>
+      <label>Ciudad<input id="input-cliente-ciudad" placeholder="Albacete"></label>
+    </div>
+    <label>Provincia / Comunidad<input id="input-cliente-provincia" placeholder="Ej: Asturias, Cantabria…"></label>
+    <label>Notas<textarea id="input-cliente-notas" rows="2"></textarea></label>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal mi perfil / cambiar contraseña -->
+<dialog id="modal-cambiar-pass">
+  <form id="form-cambiar-pass" style="padding:22px 26px;gap:14px;min-width:340px">
+    <h3 id="cambiar-pass-titulo" style="margin:0 0 2px">Mi perfil</h3>
+    <p id="cambiar-pass-usuario" style="margin:0 0 4px;font-size:0.85rem;color:var(--muted)"></p>
+    <input type="hidden" id="cambiar-pass-uid">
+    <label>Correo electrónico<input id="input-perfil-email" type="email" placeholder="tu@correo.com" autocomplete="email"></label>
+    <hr style="border:none;border-top:1px solid var(--border);margin:2px 0">
+    <p style="margin:0;font-size:0.8rem;color:var(--muted)">Nueva contraseña (dejar vacío para no cambiarla)</p>
+    <label>Nueva contraseña<input id="input-cambiar-pass" type="password" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></label>
+    <div class="modal-actions">
+      <button type="button" id="btn-cambiar-pass-cancelar" class="btn">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal confirmación genérica -->
+<dialog id="modal-confirm" class="modal-aviso">
+  <form method="dialog" style="padding:22px 26px;gap:14px;max-width:380px">
+    <h3 id="confirm-titulo">Confirmar</h3>
+    <p id="confirm-mensaje" style="color:var(--muted);font-size:0.9rem;margin:0;white-space:pre-line"></p>
+    <div class="modal-actions" style="margin-top:4px">
+      <button type="submit" value="cancel" id="confirm-btn-cancel" class="btn">Cancelar</button>
+      <button type="submit" value="ok" id="confirm-btn-ok" class="btn btn-primary">Aceptar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Modal aviso genérico -->
+<dialog id="modal-alert" class="modal-aviso">
+  <form method="dialog" style="padding:22px 26px;gap:14px;max-width:380px">
+    <h3 id="alert-titulo">Aviso</h3>
+    <p id="alert-mensaje" style="color:var(--muted);font-size:0.9rem;margin:0;white-space:pre-line"></p>
+    <div class="modal-actions" style="margin-top:4px">
+      <button type="submit" value="ok" class="btn btn-primary">Aceptar</button>
+    </div>
+  </form>
+</dialog>
+
+<footer class="app-footer">Copyright © 2026 — Hecho por Alejandro Pacheco</footer>
+
+<script src="/pages/inicio/inicio.js"></script>
+</body>
+</html>

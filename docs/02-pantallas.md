@@ -71,6 +71,8 @@ de un cliente:
 cliente especial: equipos y material que son propiedad del propio taller, sin
 asignar a ningún cliente externo.
 
+![Oficina Megas](screenshots/08-oficina.jpg)
+
 ## 4. Tickets
 
 ![Tickets](screenshots/04-tickets.jpg)

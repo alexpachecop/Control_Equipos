@@ -494,6 +494,11 @@ if (db.prepare(`SELECT COUNT(*) as n FROM clientes`).get().n === 0) {
     INSERT INTO inventario_movimientos (articulo_id, tipo, cantidad, stock_anterior, stock_nuevo, salida_id, referencia, notas, usuario)
     VALUES (?, 'salida', ?, 25, ?, ?, 'Entrega inicial', 'Salida de demostración', 'Demo')
   `).run(articulo.lastInsertRowid, cantidadSalida, stockTrasSalida, salida.lastInsertRowid);
+
+  db.prepare(`
+    INSERT INTO licencias_clientes (cliente_id, programa, numero_licencia, fecha, usuario)
+    VALUES (?, 'Office 365', 'DEMO-LIC-0001', ?, 'Demo')
+  `).run(cliente.lastInsertRowid, hoy);
 }
 
 module.exports = db;
